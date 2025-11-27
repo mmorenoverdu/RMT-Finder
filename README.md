@@ -2,7 +2,7 @@
 
 'RMT-Finder' is a resource developed to streamline the determination of the Resting Motor Threshold (RMT) in Transcranial Magnetic Stimulation (TMS) studies. It is an automated procedure to determine the RMT in a shorter but reliable manner, reducing the workload for the experimenter by measuring Motor Evoked Potential (MEP) amplitudes, and automatically adjust stimulation intensity based on the responses observed.
 
-With 'RMT-Finder', you experimenter only needs to focus on maintaining coil positioning during RMT determination, which will usually take less than 3 minutes and around 33-34 trials, with a maximum of 4 intensities tested in the fastest version of the procedure.
+With 'RMT-Finder', the experimenter only needs to focus on maintaining precise coil positioning during RMT determination, as everything else will be done automatically. The whole process will usually take less than 3 minutes and around 33-34 trials, with a maximum of 4 intensities tested in the fastest version of the procedure.
 
 # Resting Motor Threshold (RMT) definition
 
