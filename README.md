@@ -34,7 +34,7 @@ The 'RMT-Finder' is composed of 2 main Signal files that you can download direct
 ### 1. Sampling Configuration (.sgcx):
 Contains important sampling parameters such as trial length, intertrial interval, sampling frequency, input and output channels, etc.
 There are two important settings in this file that must be specified the first time you use 'RMT-Finder':
-1. Define the correct communication port for the serial port: Go to Sample > Sampling Configuration > States. In the bottom-left part you will see a button "Auxiliary devices". Click on it and a new menu will pop up. In that menu, select the appropriate COM port of your computer, to which the stimulator is connected through the serial port.
+1. Define the correct communication port for the serial port: Go to Sample > Sampling Configuration > States. In the bottom-right corner you will see an "Auxiliary" button. Click on it and a new menu will pop up to select which type of device you want to configure. Once you have selected it, a new menu will appear. In this menu, select the appropriate COM port of your computer, to which the stimulator is connected through the serial port.
 2. Define the desired Inter-trial interval (ITI): Go to Sample > Sampling Configuration > States > Configure Pulses. In the pop-up menu, the Interval (in seconds) and its variation (in % of time) can be set. By default, 'RMT-Finder' will use a fixed and short ITI of 4 seconds. This gives sufficient time to the stimulator device to recharge between pulses. Note that if you want to change the ITI [CAN THIS BE DONE AUTOMATICALLY IN THE SCRIPT???]
 
 Input/output channels configuration:
