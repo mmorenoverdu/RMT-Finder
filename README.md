@@ -22,8 +22,10 @@ In the 'RMT-Finder', a range of intensities (in % MSO) within which the RMT shou
 The algorithm will repeat the process described above until the search space is exhausted (i.e. the lower and the upper limit are the same), and therefore at that point the lowest stimulation intensity meeting the criterion will be the RMT. Note that these two outcomes do not technically require 10 trials on every iteration: the algorithm will proceed to the next step as soon as 5 valid or 6 invalid trials are found, therefore speeding up the process.
 
 Users can specify the initial search space in two ways:
-1. Relative Search Space: Specify a range of intensities relative to the intensity at which the hostpot is found. If responses during hotspotting are around the desired 50 µV threshold amplitude, it is reasonable to assume that the RMT will be close to the hotspot intensity. By default, 'RMT-Finder' will use a range determined as hostpot intensity ± 10% MSO, as the RMT is unlikely to be beyond that range if the coil position is maintained. The user can easily modify this in the provided script.
-2. Absolute Search Space: Use the full range of the stimulation device as the search space (from 1% to 100% MSO), or an arbitrary wide range (e.g. 20% to 90% MSO). This will be slower as the algorithm will test intensities implausibly lower/higher for a given individual (e.g. if the hotspot is found with intensities around 40% MSO, it is unlikely that the RMT will be 70% MSO). However, the Absolute and the Relative methods will converge to the same RMT within ± 2% MSO according to our previous data ([Boidequin et al. 2026]). We do not recommend the Absolute method because it is slower and high intensities might cause unnecesary discomfort for the person. Therefore, we highly recommend the Relative method.
+
+**1. Relative Search Space:** Specify a range of intensities relative to the intensity at which the hostpot is found. If responses during hotspotting are around the desired 50 µV threshold amplitude, it is reasonable to assume that the RMT will be close to the hotspot intensity. By default, 'RMT-Finder' will use a range determined as hostpot intensity ± 10% MSO, as the RMT is unlikely to be beyond that range if the coil position is maintained. The user can easily modify this in the provided script.
+
+**2. Absolute Search Space:** Use the full range of the stimulation device as the search space (from 1% to 100% MSO), or an arbitrary wide range (e.g. 20% to 90% MSO). This will be slower as the algorithm will test intensities implausibly lower/higher for a given individual (e.g. if the hotspot is found with intensities around 40% MSO, it is unlikely that the RMT will be 70% MSO). However, the Absolute and the Relative methods will converge to the same RMT within ± 2% MSO according to our previous data ([Boidequin et al. 2026]). We do not recommend the Absolute method because it is slower and high intensities might cause unnecesary discomfort for the person. Therefore, we highly recommend the Relative method.
 
 # Technical specifications (software)
 
@@ -49,7 +51,7 @@ Optional parameters: Sampling rate and other parameters can be also modified thr
 ### 2. Script (.sgs):
 Contains the code, written in Signal's native programming language, to measure MEP peak-to-peak amplitudes and automatically adjust stimulation intensity accordingly. To collect data, the script will load the sampling configuration template and will create a toolbar with a 'RMT-Finder START' and 'PAUSE'/'QUIT' buttons.
 
-Important default parameters in the script. The script assumes that:
+Important default parameters in the script. The script *assumes* that:
 1. The EMG signal is recorded via numbered ADC channels (typically through a 1401 interface - see Hardware). By default, the first muscle will be ADC #0, and additional muscles should be recorded subsequently.
 2. Each trial is a sweep with length of 1 second of EMG recording, and the TMS pulse is delivered in the middle of the trial, at 500ms (as per the sampling configuration).
 3. The EMG signal is already online amplified and band-pass filtered. This is an important factor to consider when measuring MEPs. Make sure your EMG amplifier has sensible configurations.
