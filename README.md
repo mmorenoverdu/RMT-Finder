@@ -93,8 +93,16 @@ The workflow to use the 'RMT-Finder' is very simple:
 6. Go to Script > Run script > Load and run. Select the corresponding 'RMT-Finder' script.
 7. *Optional*: make changes in the script as necessary. The script is well-documented and self-explanatory.
 8. Click on the 'Run script' button (upper right corner). This will open a pop-up menu where you can select the method to find the RMT:
-       1. If you input a hotspot intensity (must be >0% MSO), this will set a relative search space, whereby the first intensity tested will be the hotspot intensity and the range will be ± 10% MSO around it, by default.
-       2. If you input a value of 0, this will set an absolute search space defined by the script, with 20% to 90% MSO as default values.
-10. This will open a data collection sheet directly and a toolbar with the 'RMT-Finder' buttons.
-11. **DO NOT use Signal's native 'START' button** (in the upper left corner). Instead, use the **'START RMT-Finder' button** (in the upper right corner that is in the toolbar).
-12. Once you click START, the script will first deliver a 'dummy' trial at 1% MSO to confirm that communication and settings are correct. Then, it will adjust the stimulator's intensity to
+    1. If you input a hotspot intensity (must be >0% MSO), this will set a Relative search space, whereby the first intensity tested will be the hotspot intensity and the range will be ± 10% MSO around it, by default.
+    2. If you input a value of 0, this will set an Absolute search space defined by the script, with 20% to 90% MSO as default values.
+9. This will open a data collection sheet directly and a toolbar with the 'RMT-Finder' buttons.
+10. **DO NOT use Signal's native 'START' button** (in the upper left corner). Instead, use the **'START RMT-Finder' button** (in the upper right corner that is in the toolbar).
+
+Once you click START, the script will:
+1. Open a data collection file.
+2. Open a log text file: MEP amplitudes, RMS values, number of trials and intensities tested will be printed online here.
+3. First deliver a 'dummy' trial at 1% MSO to confirm that communication and settings are correct.
+4. Adjust the stimulator's intensity to the midpoint of the defined search space.
+5. Start delivering trials in the search of the RMT!
+6. Once the algorithm has found the RMT, an auditory message will indicate that data collection is complete.
+7. At the bottom of the log text document: A quick summary including the RMT value, the number of pulses, time from first to last pulse and number of intensities will be printed.
