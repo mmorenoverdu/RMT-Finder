@@ -20,7 +20,7 @@ In the 'RMT-Finder', a range of intensities (in % MSO) within which the RMT shou
 - 5 valid trials are found. That intensity can be the RMT and therefore all higher intensities cannot be the RMT. The algorithm will discard all intensities above it and set this intensity -1% MSO as the upper limit of the new search space. In the next iteration, a new midpoint determined by this new search space will be tested.
 - 6 invalid trials are found. That intensity cannot be the RMT and therefore all lower intensities cannot be the RMT either. The algorithm will discard all intensities below it and set this intensity +1% MSO as the lower limit of the new search space. In the next iteration, a new midpoint determined by this new search space will be tested.
 
-![Binary serach algorithm](https://github.com/user-attachments/assets/b8bd8fbc-a12c-48b5-b4a5-8325eabe1f07)
+<img width="720" height="462" alt="Binary search algorithm" src="https://github.com/user-attachments/assets/b8bd8fbc-a12c-48b5-b4a5-8325eabe1f07" />
 
 The algorithm will repeat the process described above until the search space is exhausted (i.e. the lower and the upper limit are the same), and therefore at that point the lowest stimulation intensity meeting the criterion will be the RMT. Note that these two outcomes do not technically require 10 trials on every iteration: the algorithm will proceed to the next step as soon as 5 valid or 6 invalid trials are found, therefore speeding up the process.
 
