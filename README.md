@@ -10,7 +10,7 @@ According to relative-frequency approaches, the RMT is defined as the lowest sti
 - A 'valid' trial is an MEP with peak-to-peak amplitude ≥ 50 µV.
 - An 'invalid' trial is an MEP with peak-to-peak amplitude < 50 µV. 
 
-<img width="720" height="462" alt="TMS setup RMT-Finder" src="https://github.com/user-attachments/assets/d85e3fd8-a9af-4412-9021-ac59d9462a25" />
+<img width="720" height="450" alt="TMS setup RMT-Finder" src="https://github.com/user-attachments/assets/606d5ca8-4df6-46b9-b294-db02c8ecc296" />
 
 
 # RMT-Finder Algorithm
@@ -21,7 +21,7 @@ In the 'RMT-Finder', a range of intensities (in % MSO) within which the RMT shou
 - 5 valid trials are found. That intensity can be the RMT and therefore all higher intensities cannot be the RMT. The algorithm will discard all intensities above it and set this intensity -1% MSO as the upper limit of the new search space. In the next iteration, a new midpoint determined by this new search space will be tested.
 - 6 invalid trials are found. That intensity cannot be the RMT and therefore all lower intensities cannot be the RMT either. The algorithm will discard all intensities below it and set this intensity +1% MSO as the lower limit of the new search space. In the next iteration, a new midpoint determined by this new search space will be tested.
 
-<img width="720" height="462" alt="Binary search algorithm" src="https://github.com/user-attachments/assets/09e88ae5-96c0-45e3-83da-8bd6f99796ed" />
+<img width="720" height="450" alt="Binary search algorithm" src="https://github.com/user-attachments/assets/09e88ae5-96c0-45e3-83da-8bd6f99796ed" />
 
 The algorithm will repeat the process described above until the search space is exhausted (i.e. the lower and the upper limit are the same), and therefore at that point the lowest stimulation intensity meeting the criterion will be the RMT. Note that these two outcomes do not technically require 10 trials on every iteration: the algorithm will proceed to the next step as soon as 5 valid or 6 invalid trials are found, therefore speeding up the process.
 
