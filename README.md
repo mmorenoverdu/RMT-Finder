@@ -76,9 +76,7 @@ Adjustable parameters in the script and their defaults:
 
 Hardare requirements include:
 1. A computer running Signal, with drivers installed for the 1401 interface and the EMG amplifier/software.
-2. A serial port cable with the pins set up according to the device's user manual (e.g. [BiStim]())
-
-To allow communication between Signal and the Magstim device, you will need a serial port [ASK SPECIFICATIONS TO JULIEN]
+2. A serial port cable with the pins set up according to the device's user manual (e.g. BiStim). To allow communication between Signal and the Magstim device, you will need a serial port with the pinout organized in a specific manner. See this [BiStim example](https://github.com/mmorenoverdu/RMT-Finder/blob/main/Useful%20manuals%20and%20resources/Magstim%20-%20BiStim.%20Pinout%20Serial%20Cable%20(custom-made).pdf).
 
 # Usage of the 'RMT-Finder'
 
