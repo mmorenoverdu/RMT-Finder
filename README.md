@@ -82,9 +82,19 @@ Hardware requirements include:
 3. An EMG system to collect MEPs in the target muscle.
 4. A 1401 interface to coordinate EMG collection and TMS control.
 
-# Usage of the 'RMT-Finder'
+# First time using the 'RMT-Finder'
 
-The workflow to use the 'RMT-Finder' is very simple:
+Do not forget to check and adjust the following parameters (it is required only once):
+1. In Sampling Configurations:
+    - Select the correct COM port.
+    - Specify the correct path to save your data.
+2. In Script:
+    - Specify the correct path to save your data.
+    - Specify your default settings: number of muscles, device type, noise limit, MEP amplitude, offset correction, relative/absolute search algorithms, inter-trial interval. 
+
+# Regular usage of the 'RMT-Finder'
+
+Once you have set up the afore-mentioned parameters, the regular workflow to use the 'RMT-Finder' is very simple:
 1. Hardware settings:
     1. Connect the serial port from the computer running Signal to the stimulator device. Remember it must be the correct COM port.
     2. Connect the Trigger In BNC cable from the back of the stimulator device to the Digitial Output 0 in the 1401 interface.
