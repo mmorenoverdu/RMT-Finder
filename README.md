@@ -1,8 +1,10 @@
-# RMT-Finder Overview
 
+# RMT-Finder Overview
+<p align="justify">
 'RMT-Finder' is a resource developed to streamline the determination of the Resting Motor Threshold (RMT) in Transcranial Magnetic Stimulation (TMS) studies. It is an automated procedure to determine the RMT in a shorter but reliable manner, reducing the workload for the experimenter by measuring Motor Evoked Potential (MEP) amplitudes, and automatically adjusting stimulation intensity based on the responses observed.
 
 With 'RMT-Finder', the experimenter only needs to focus on maintaining precise coil positioning during RMT determination, as everything else will be done automatically. The whole process will usually take less than 3 minutes and around 33-34 trials, with a maximum of 4 intensities tested in the fastest version of the procedure.
+</p>
 
 # Resting Motor Threshold (RMT) definition
 
@@ -20,9 +22,10 @@ According to relative-frequency approaches, the RMT is defined as the lowest sti
 In the 'RMT-Finder', a range of intensities (in % MSO) within which the RMT should be found, must be specified. The algorithm will always start testing the midpoint of this defined search space. Every iteration (i.e., intensity tested as candidate to be RMT), up to 10 trials will be collected. After testing a given intensity, there can be two outcomes:
 - 5 valid trials are found. That intensity can be the RMT and therefore all higher intensities cannot be the RMT. The algorithm will discard all intensities above it and set this intensity -1% MSO as the upper limit of the new search space. In the next iteration, a new midpoint determined by this new search space will be tested.
 - 6 invalid trials are found. That intensity cannot be the RMT and therefore all lower intensities cannot be the RMT either. The algorithm will discard all intensities below it and set this intensity +1% MSO as the lower limit of the new search space. In the next iteration, a new midpoint determined by this new search space will be tested.
+</p>
 
 <img width="720" height="450" alt="Binary search algorithm" src="https://github.com/user-attachments/assets/44d3ea52-8ea4-41f1-ab13-1eb43c723c70" />
-
+<p align="justify">
 The algorithm will repeat the process described above until the search space is exhausted (i.e. the lower and the upper limit are the same), and therefore at that point the lowest stimulation intensity meeting the criterion will be the RMT. Note that these two outcomes do not technically require 10 trials on every iteration: the algorithm will proceed to the next step as soon as 5 valid or 6 invalid trials are found, therefore speeding up the process.
 
 Users can specify the initial search space in two ways:
@@ -31,14 +34,17 @@ Users can specify the initial search space in two ways:
 
 **2. Absolute Search Space:** Use the full range of the stimulation device as the search space (from 1% to 100% MSO), or an arbitrary wide range (e.g. 20% to 90% MSO). This will be slower as the algorithm will test intensities implausibly lower/higher for a given individual (e.g. if the hotspot is found with intensities around 40% MSO, it is unlikely that the RMT will be 70% MSO). However, the Absolute and the Relative methods will converge to the same RMT within ± 2% MSO according to our previous data ([Boidequin et al. 2026]). We do not recommend the Absolute method because it is slower and high intensities might cause unnecesary discomfort for the person. Therefore, we highly recommend the Relative method.
 
+
 # Technical specifications (software)
 
 At present, RMT-Finder works as a script + sampling configuration developed in the [Signal](https://ced.co.uk/products/sigovin) programming language from [CED](https://ced.co.uk/). A version of Signal 6.04 or higher is required to run 'RMT-Finder'.
 
 'RMT-Finder' has been tested using [Magstim](https://www.magstim.com/) devices ([200](https://www.magstim.com/product/magstim-m200%c2%b2/) and [BiStim](https://www.magstim.com/product/magstim-bistim2/), but could also be used for [Rapid](https://www.magstim.com/product/rapid%c2%b2/)). It thus requires the 'Magstim' extension module to be installed in Signal. This allows Signal to control stimulation parameters (e.g. stimulator output) of the stimulation device directly through a serial port (see Hardware). Please note that Signal may be compatible with stimulation devices from [Magventure](https://magventure.com/) and other companies (see [this document](https://github.com/mmorenoverdu/RMT-Finder/blob/main/Useful%20manuals%20and%20resources/Signal%20integration%20with%20TMS%20Toolbox%20v2.pdf)).
+</p>
 
 'RMT-Finder' is composed of 2 main Signal files that you can download directly from this repository:
 ### 1. Sampling Configuration (.sgcx):
+
 Contains important sampling parameters such as trial length, inter-trial interval, sampling frequency, input and output channels, etc.
 There are two important settings in this file that must be specified the first time you use 'RMT-Finder':
 1. **<ins>Define the correct communication port for the serial port:**</ins> Go to Sample > Sampling Configuration > States. In the bottom-right corner you will see an "Auxiliary" button. Click on it and a new menu will pop up to select which type of device you want to configure. Once you have selected it, a new menu will appear. In this menu, select the appropriate COM port of your computer, to which the stimulator is connected through the serial port.
@@ -53,6 +59,7 @@ Input/output channels configuration:
 *Reminder*: Signal does not automatically save changes in the Sampling Configuration. Make sure to always go to File > Save Configuration As, to save your modifications!
 
 ### 2. Script (.sgs):
+
 Contains the code, written in Signal's native programming language, to measure MEP peak-to-peak amplitudes and automatically adjust stimulation intensity accordingly. To collect data, the script will load the sampling configuration template and will create a toolbar with 'START' and 'QUIT' buttons.
 
 **Important default parameters in the script. The script *assumes* that:**
@@ -73,6 +80,7 @@ Contains the code, written in Signal's native programming language, to measure M
 8. Inter-trial Interval (ITI): fixed at 4.5 seconds (default). Variable ITIs can be specified.
 9. Relative search space limits (method 'hotspot ± range'): -10% to +10% MSO.
 10. Absolute search space limits: 20% to 90% MSO.
+
 
 # Hardware
 
@@ -119,3 +127,4 @@ Once you have set up the afore-mentioned parameters, the regular workflow to use
 5. Start delivering trials in the search of the RMT!
 6. Once the algorithm has found the RMT, an auditory message will indicate that data collection is complete.
 7. At the bottom of the log text document: A quick summary including the RMT value, the number of pulses, time from first to last pulse and number of intensities will be printed.
+
