@@ -42,7 +42,7 @@ At present, RMT-Finder works as a script + sampling configuration developed in t
 Contains important sampling parameters such as trial length, inter-trial interval, sampling frequency, input and output channels, etc.
 There are two important settings in this file that must be specified the first time you use 'RMT-Finder':
 1. Define the correct communication port for the serial port: Go to Sample > Sampling Configuration > States. In the bottom-right corner you will see an "Auxiliary" button. Click on it and a new menu will pop up to select which type of device you want to configure. Once you have selected it, a new menu will appear. In this menu, select the appropriate COM port of your computer, to which the stimulator is connected through the serial port.
-2. Define the desired Inter-trial interval (ITI): Go to Sample > Sampling Configuration > States > Configure Pulses. In the pop-up menu, the Interval (in seconds) and its variation (in % of time) can be set. By default, 'RMT-Finder' will use a fixed and short ITI of 4.5 seconds. This gives sufficient time to the stimulator device to recharge between pulses. Note that if you want to change the ITI, at the time of writing this has to be done manually in the sampling configuration.
+2. Define the correct path to save data: Go to Sample > Sampling Configuration > Automate. In the menu, browse to the desired path where you want to store the raw data (saved as a .cfs file).
 
 Input/output channels configuration:
 1. Input channels: These channels read EMG signals directly from a 1401 interface ([Power](https://ced.co.uk/products/pow3in)/[Micro](https://ced.co.uk/products/mic4in)), also by CED. The 1401 coordinates inputs and outputs in a timely manner. Typically, the 1401 will be receiving inputs from the EMG amplifier through BNC cables. The input channels are Analogue to Digital (ADC) channels and are numbered. Go to Sample > Sample Configuration. In the General tab, you can modify the number of ADC channels that are available (4 by default, Signal starts at number #0). In the Port Setup tab, you can modify each channel's configuration (e.g. labels).
@@ -69,8 +69,10 @@ Adjustable parameters in the script and their defaults:
 4. MEP envelope: 10-50ms after pulse.
 5. Threshold (RMS) for background noise: 50 µV.
 6. Background noise envelope: 1-100ms before pulse.
-7. Relative search space limits (method 'hotspot ± range'): -10% to +10% MSO.
-8. Absolute search space limits: 20% to 90% MSO.
+7. Signal offset removal: Yes (default) or no. Useful to reduce noise.
+8. Inter-trial Interval (ITI): fixed at 4.5 seconds (default). Variable ITIs can be specified.
+9. Relative search space limits (method 'hotspot ± range'): -10% to +10% MSO.
+10. Absolute search space limits: 20% to 90% MSO.
 
 # Hardware
 
@@ -91,10 +93,10 @@ The workflow to use the 'RMT-Finder' is very simple:
 3. Go to File > Load Configuration. Open the corresponding 'RMT-Finder' sampling configuration.
 4. *Optional*: Go to the Magstim module and click on 'Test' to confirm that communication with the device is correct.
 5. **Click 'OK'. DO NOT click on 'Run now'**. This will open the data collection tab and will make the script unable to work.
-6. Go to Script > Run script > Load and run. Select the corresponding 'RMT-Finder' script.
+6. Go to Script > Run script > Load and run. Select the 'RMT-Finder' script.
 7. *Optional*: make changes in the script as necessary. The script is well-documented and self-explanatory.
-8. Click on the 'Run script' button (upper right corner). This will open a pop-up menu where you can select the method to find the RMT:
-    1. If you input a hotspot intensity (must be >0% MSO), this will set a Relative search space, whereby the first intensity tested will be the hotspot intensity and the range will be ± 10% MSO around it, by default.
+8. Click on the 'Run script' button (upper right corner). This will open a pop-up menu where you can input a participant ID and then another menu where you will select the method to find the RMT:
+    1. If you input a hotspot intensity (must be >0% MSO), this will set a Relative search space, whereby the first intensity tested will be the hotspot intensity and the range will be ± 10% MSO around it (by default).
     2. If you input a value of 0, this will set an Absolute search space defined by the script, with 20% to 90% MSO as default values.
 9. This will open a data collection sheet directly and a toolbar with the 'RMT-Finder' buttons.
 10. **DO NOT use Signal's native 'START' button** (in the upper left corner). Instead, use the **'START RMT-Finder' button** (in the upper right corner that is in the toolbar).
