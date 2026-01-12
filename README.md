@@ -41,28 +41,28 @@ At present, RMT-Finder works as a script + sampling configuration developed in t
 ### 1. Sampling Configuration (.sgcx):
 Contains important sampling parameters such as trial length, inter-trial interval, sampling frequency, input and output channels, etc.
 There are two important settings in this file that must be specified the first time you use 'RMT-Finder':
-1. Define the correct communication port for the serial port: Go to Sample > Sampling Configuration > States. In the bottom-right corner you will see an "Auxiliary" button. Click on it and a new menu will pop up to select which type of device you want to configure. Once you have selected it, a new menu will appear. In this menu, select the appropriate COM port of your computer, to which the stimulator is connected through the serial port.
-2. Define the correct path to save data: Go to Sample > Sampling Configuration > Automate. In the menu, browse to the desired path where you want to store the raw data (saved as a .cfs file).
+1. **<ins>Define the correct communication port for the serial port:**</ins> Go to Sample > Sampling Configuration > States. In the bottom-right corner you will see an "Auxiliary" button. Click on it and a new menu will pop up to select which type of device you want to configure. Once you have selected it, a new menu will appear. In this menu, select the appropriate COM port of your computer, to which the stimulator is connected through the serial port.
+2. **<ins>Define the correct path to save data:**</ins> Go to Sample > Sampling Configuration > Automate. In the menu, browse to the desired path where you want to store the raw data (saved as a .cfs file).
 
 Input/output channels configuration:
-1. Input channels: These channels read EMG signals directly from a 1401 interface ([Power](https://ced.co.uk/products/pow3in)/[Micro](https://ced.co.uk/products/mic4in)), also by CED. The 1401 coordinates inputs and outputs in a timely manner. Typically, the 1401 will be receiving inputs from the EMG amplifier through BNC cables. The input channels are Analogue to Digital (ADC) channels and are numbered. Go to Sample > Sample Configuration. In the General tab, you can modify the number of ADC channels that are available (4 by default, Signal starts at number #0). In the Port Setup tab, you can modify each channel's configuration (e.g. labels).
-2. Output channels: These channels send triggers directly from the 1401 interface to the stimulator device. This can be done through the Digital to Analogue (DAC) channels or through the Digital Outputs channels, both from the 1401. 'RMT-Finder' is set to use the Digital Output channels by default. Go to Sample > Sample Configuration > Outputs. You can modify the number of DAC/Digital Output channels available (by default, 'RMT-Finder' will send triggers through Digital Outputs #0 and #1).
+1. <ins>**Input channels:**</ins> These channels read EMG signals directly from a 1401 interface ([Power](https://ced.co.uk/products/pow3in)/[Micro](https://ced.co.uk/products/mic4in)), also by CED. The 1401 coordinates inputs and outputs in a timely manner. Typically, the 1401 will be receiving inputs from the EMG amplifier through BNC cables. The input channels are Analogue to Digital (ADC) channels and are numbered. Go to Sample > Sample Configuration. In the General tab, you can modify the number of ADC channels that are available (4 by default, Signal starts at number #0). In the Port Setup tab, you can modify each channel's configuration (e.g. labels).
+2. **<ins>Output channels:**</ins> These channels send triggers directly from the 1401 interface to the stimulator device. This can be done through the Digital to Analogue (DAC) channels or through the Digital Outputs channels, both from the 1401. 'RMT-Finder' is set to use the Digital Output channels by default. Go to Sample > Sample Configuration > Outputs. You can modify the number of DAC/Digital Output channels available (by default, 'RMT-Finder' will send triggers through Digital Outputs #0 and #1).
 
-Optional parameters: Sampling rate and other parameters can be also modified through the sampling configuration. Please read Signal's user manual for more information.
+**Optional parameters:** Sampling rate and other parameters can be also modified through the sampling configuration. Please read Signal's user manual for more information.
 
 *Reminder*: Signal does not automatically save changes in the Sampling Configuration. Make sure to always go to File > Save Configuration As, to save your modifications!
 
 ### 2. Script (.sgs):
 Contains the code, written in Signal's native programming language, to measure MEP peak-to-peak amplitudes and automatically adjust stimulation intensity accordingly. To collect data, the script will load the sampling configuration template and will create a toolbar with 'START' and 'QUIT' buttons.
 
-Important default parameters in the script. The script *assumes* that:
+**Important default parameters in the script. The script *assumes* that:**
 1. The EMG signal is recorded via numbered ADC channels (typically through a 1401 interface - see Hardware). By default, the first muscle will be ADC #0, and additional muscles should be recorded subsequently.
 2. Each trial is a sweep with length of 1 second of EMG recording, and the TMS pulse is delivered in the middle of the trial, at 500ms (as per the sampling configuration).
 3. The EMG signal is already online amplified and band-pass filtered. This is an important factor to consider when measuring MEPs. Make sure your EMG amplifier has sensible configurations.
 4. The envelope in which the MEP should be found is between 10ms and 50ms after the TMS pulse (for upper limb muscles, MEP latencies are around 20-25ms, for lower limb muscles, around 30-35ms). 'RMT-Finder' will measure the peak-to-peak amplitude of the EMG signal only in this envelope by default, but the envelope can be easily changed in the script. The threshold for a valid trial is a peak-to-peak amplitude of the EMG signal of at least 50 µV, which can be also eaisly changed in the script.
 5. The individual is at rest. Background noise is checked as the Root Mean Square (RMS) of the EMG signal in an envelope of 100ms before the TMS pulse.The script allows the user to optionally define a given value of RMS that is considered 'acceptable' (and therefore if higher values are found, the trial will not be considered for RMT determination). It also allows to change the desired envelope. Because absolute RMS values will vary significantly across setups and participants and can be impacted by the sampling frequency, bandpass filters, etc., we recommend the user to set an appropriate value based on their setup specification.
 
-Adjustable parameters in the script and their defaults:
+**Adjustable parameters in the script and their defaults:**
 1. Magstim device: BiStim (default) and 200 stimulators.
 2. Number of muscles: From 1 (default) up to 4.
 3. Threshold for MEP amplitude: 50 µV.
@@ -76,7 +76,7 @@ Adjustable parameters in the script and their defaults:
 
 # Hardware
 
-Hardware requirements include:
+**Hardware requirements include:**
 1. A computer running Signal, with drivers installed for the 1401 interface and the EMG amplifier/software.
 2. A serial port cable with the pins set up according to the device's user manual (e.g. BiStim). To allow communication between Signal and the Magstim device, you will need a serial port with the pinout organized in a specific manner. See this [BiStim example](https://github.com/mmorenoverdu/RMT-Finder/blob/main/Useful%20manuals%20and%20resources/Magstim%20-%20BiStim.%20Pinout%20Serial%20Cable%20(custom-made).pdf).
 3. An EMG system to collect MEPs in the target muscle.
@@ -85,16 +85,16 @@ Hardware requirements include:
 # First time using the 'RMT-Finder'
 
 Do not forget to check and adjust the following parameters (it is required only once):
-1. In Sampling Configurations:
+1. **<ins>In Sampling Configuration(s):**</ins>
     - Select the correct COM port.
     - Specify the correct path to save your data.
-2. In Script:
+2. **<ins>In Script:**</ins>
     - Specify the correct path to save your data.
     - Specify your default settings: number of muscles, device type, noise limit, MEP amplitude, offset correction, relative/absolute search algorithms, inter-trial interval. 
 
 # Regular usage of the 'RMT-Finder'
 
-Once you have set up the afore-mentioned parameters, the regular workflow to use the 'RMT-Finder' is very simple:
+Once you have set up the afore-mentioned parameters, the regular workflow to use **the 'RMT-Finder' is very simple:**
 1. Hardware settings:
     1. Connect the serial port from the computer running Signal to the stimulator device. Remember it must be the correct COM port.
     2. Connect the Trigger In BNC cable from the back of the stimulator device to the Digitial Output 0 in the 1401 interface.
@@ -111,7 +111,7 @@ Once you have set up the afore-mentioned parameters, the regular workflow to use
 9. This will open a data collection sheet directly and a toolbar with the 'RMT-Finder' buttons.
 10. **DO NOT use Signal's native 'START' button** (in the upper left corner). Instead, use the **'START RMT-Finder' button** (in the upper right corner that is in the toolbar).
 
-Once you click START, the script will:
+**<ins>Once you click START, the script will:**</ins>
 1. Open a data collection file.
 2. Open a log text file: MEP amplitudes, RMS values, number of trials and intensities tested will be printed online here.
 3. First deliver a 'dummy' trial at 1% MSO to confirm that communication and settings are correct.
