@@ -53,7 +53,7 @@ Optional parameters: Sampling rate and other parameters can be also modified thr
 *Reminder*: Signal does not automatically save changes in the Sampling Configuration. Make sure to always go to File > Save Configuration As, to save your modifications!
 
 ### 2. Script (.sgs):
-Contains the code, written in Signal's native programming language, to measure MEP peak-to-peak amplitudes and automatically adjust stimulation intensity accordingly. To collect data, the script will load the sampling configuration template and will create a toolbar with a 'RMT-Finder START' and 'PAUSE'/'QUIT' buttons.
+Contains the code, written in Signal's native programming language, to measure MEP peak-to-peak amplitudes and automatically adjust stimulation intensity accordingly. To collect data, the script will load the sampling configuration template and will create a toolbar with 'START' and 'QUIT' buttons.
 
 Important default parameters in the script. The script *assumes* that:
 1. The EMG signal is recorded via numbered ADC channels (typically through a 1401 interface - see Hardware). By default, the first muscle will be ADC #0, and additional muscles should be recorded subsequently.
