@@ -51,7 +51,7 @@ There are two important settings in this file that must be specified the first t
 2. **<ins>Define the correct path to save data:**</ins> Go to Sample > Sampling Configuration > Automate. In the menu, browse to the desired path where you want to store the raw data (saved as a .cfs file).
 
 Input/output channels configuration:
-1. <ins>**Input channels:**</ins> These channels read EMG signals directly from a 1401 interface ([Power](https://ced.co.uk/products/pow3in)/[Micro](https://ced.co.uk/products/mic4in)), also by CED. The 1401 coordinates inputs and outputs in a timely manner. Typically, the 1401 will be receiving inputs from the EMG amplifier through BNC cables. The input channels are Analogue to Digital (ADC) channels and are numbered. Go to Sample > Sample Configuration. In the General tab, you can modify the number of ADC channels that are available (4 by default, Signal starts at number #0). In the Port Setup tab, you can modify each channel's configuration (e.g. labels).
+1. <ins>**Input channels:**</ins> These channels read EMG signals directly from a 1401 interface ([Power](https://ced.co.uk/products/pow3in)/[Micro](https://ced.co.uk/products/mic4in)), also by CED. The 1401 coordinates inputs and outputs in a timely manner. Typically, the 1401 will be receiving inputs from the EMG amplifier through BNC cables. The input channels are Analogue to Digital (ADC) channels and are numbered. Go to Sample > Sample Configuration. In the General tab, you can modify the number of ADC channels that are available (4 by default, Signal starts at number #0). In the Port Setup tab, you can modify each channel's configuration (e.g. labels). Be careful and always check in the Quick Calibration tab that the gain of the EMG amplifier matches your setup. The default is a gain of 1,000 and the signal in mV.
 2. **<ins>Output channels:**</ins> These channels send triggers directly from the 1401 interface to the stimulator device. This can be done through the Digital to Analogue (DAC) channels or through the Digital Outputs channels, both from the 1401. 'RMT-Finder' is set to use the Digital Output channels by default. Go to Sample > Sample Configuration > Outputs. You can modify the number of DAC/Digital Output channels available (by default, 'RMT-Finder' will send triggers through Digital Outputs #0 and #1).
 
 **Optional parameters:** Sampling rate and other parameters can be also modified through the sampling configuration. Please read Signal's user manual for more information.
@@ -63,7 +63,7 @@ Input/output channels configuration:
 Contains the code, written in Signal's native programming language, to measure MEP peak-to-peak amplitudes and automatically adjust stimulation intensity accordingly. To collect data, the script will load the sampling configuration template and will create a toolbar with 'START' and 'QUIT' buttons.
 
 **Important default parameters in the script. The script *assumes* that:**
-1. The EMG signal is recorded via numbered ADC channels (typically through a 1401 interface - see Hardware). By default, the first muscle will be ADC #0, and additional muscles should be recorded subsequently.
+1. The EMG signal is recorded via numbered ADC channels (typically through a 1401 interface - see Hardware). By default, the first muscle will be ADC #0, and additional muscles should be recorded subsequently. The EMG signal is in mV.
 2. Each trial is a sweep with length of 1 second of EMG recording, and the TMS pulse is delivered in the middle of the trial, at 500ms (as per the sampling configuration).
 3. The EMG signal is already online amplified and band-pass filtered. This is an important factor to consider when measuring MEPs. Make sure your EMG amplifier has sensible configurations.
 4. The envelope in which the MEP should be found is between 10ms and 50ms after the TMS pulse (for upper limb muscles, MEP latencies are around 20-25ms, for lower limb muscles, around 30-35ms). 'RMT-Finder' will measure the peak-to-peak amplitude of the EMG signal only in this envelope by default, but the envelope can be easily changed in the script. The threshold for a valid trial is a peak-to-peak amplitude of the EMG signal of at least 50 µV, which can be also eaisly changed in the script.
@@ -96,6 +96,7 @@ Do not forget to check and adjust the following parameters (it is required only 
 1. **<ins>In Sampling Configuration(s):**</ins>
     - Select the correct COM port.
     - Specify the correct path to save your data (raw EMG data).
+    - Check the gain of the EMG signal in the Quick Calibration button.
 2. **<ins>In Script:**</ins>
     - Specify the correct path to save your data (RMT-Finder related data).
     - Specify your default settings: number of muscles, device type, noise limit, MEP amplitude, offset correction, relative/absolute search algorithms, inter-trial interval. 
@@ -110,14 +111,14 @@ Once you have set up the afore-mentioned parameters, the regular workflow to use
 2. Open Signal.
 3. Go to File > Load Configuration. Open the corresponding 'RMT-Finder' sampling configuration.
 4. *Optional*: Go to the Magstim module and click on 'Test' to confirm that communication with the device is correct.
-5. **Click 'OK'. DO NOT click on 'Run now'**. This will open the data collection tab and will make the script unable to work.
+5. **Click 'Ok'. DO NOT click on 'Run now'**. This will open the data collection tab and will make the script unable to work.
 6. Go to Script > Run script > Load and run. Select the 'RMT-Finder' script.
 7. *Optional*: make changes in the script as necessary. The script is well-documented and self-explanatory.
 8. Click on the 'Run script' button (upper right corner). This will open a pop-up menu where you can input a participant ID and then another menu where you will select the method to find the RMT:
     1. If you input a hotspot intensity (must be >0% MSO), this will set a Relative search space, whereby the first intensity tested will be the hotspot intensity and the range will be ± 10% MSO around it (by default).
     2. If you input a value of 0, this will set an Absolute search space defined by the script, with 20% to 90% MSO as default values.
 9. This will open a data collection sheet directly and a toolbar with the 'RMT-Finder' buttons.
-10. **DO NOT use Signal's native 'START' button** (in the upper left corner). Instead, use the **'START RMT-Finder' button** (in the upper right corner that is in the toolbar).
+10. **DO NOT use Signal's native 'Start' button** (in the upper left corner). Instead, use the **'Start RMT-Finder' button** (in the upper right corner that is in the toolbar).
 
 **<ins>Once you click START, the script will:**</ins>
 1. Open a data collection file.
