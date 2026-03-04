@@ -1,0 +1,336 @@
+'RMT Finder Toolbar v 0.3.6, 
+'Written with Signal v6.04
+'Robert Hardwick, March 2025
+'Updated by Marcos Moreno, March 2026
+
+'MIT License
+'Copyright 2025 Robert M Hardwick
+'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), 
+'to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+'and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+'THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+'FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+'IN THE SOFTWARE.
+
+'The script uses the 'toolbar' function built into Signal, and was created based on the tutorial at https://ced.co.uk/img/SigTrain.pdf (see pages 77-78).
+'See also the manual if you need further help on understanding what any given function does (https://ced.co.uk/img/Sig4Scr.pdf).
+
+'This script is designed to provide 'online' measurements of MEP amplitudes
+'these measurements are used to set the intensity of the TMS stimulator and modify it until the resting motor threshold is found.
+'The current search approach is a binary search algorythm; we reduce the possible intensities by half each time.
+'We need to look at minimum of 2 adjacent MSO values (the RMT, aka lowest intensity with at least 5 50uV MEPs, and the RMT-1, aka the highest intensity where we get 6 trials with <50uV MEPs (proving that the RMT is the lowest).
+'with a binary search algorythm we should need a maximum of 6 intensities, if we assume:
+'   -intensities <20 are not worth examining (too low to reasonably get an MEP, at least in typical adult population)
+'   -intensities >90 are not worth examining (the participant is unlikely to be eligible for our study - if we need 110% of RMT, this would be 99% MSO, so we'd likely get overheats etc).
+'Note that increasing this range to 1-100% of MSO should only lead to a maximum of 7 intensities being required (binary search cuts down options quickly!).
+'in the future we might implement a revised version that takes into account probabilities (most thresholds will be around the mean, presumably with a gaussian distribution)
+'this should improve efficiency but have a fairly minor impact (assume min 5 intensities required, max 7).
+
+'TMS intensity is set using the 'SampleState() function alongside the RMT finder configuration supplied.
+'States are defined as numbers between 001-199. The first digit refers to the stimulator (0 = main, 1 = auxilary), the remaining 2 refer to the intensity
+'   -State 001 would be stimulator 0 (main) at an intensity of 1% of MSO.
+'   -State 050 would be stimulator 0 (main) at an intensity of 50%.
+'   -State 150 would be stimulator 1 (aux) at an intensity of 50%, and so on.
+'in the intial testing phase we are working with one stimulator only, so states can be between 0-99.
+
+'For each intensity we need to take a maximum of 10 trials, and a minimum of 5.
+'We don't need 10 trials per intensity because as soon as we have at least 5 trials >=50uV, we know this COULD be the RMT, so we can move to a LOWER intensity.
+'By contrast, if we have 6 trials with MEPs <50uV, we know it CANNOT be the RMT, and can move to a HIGHER intensity.
+'So the max we would need is 10 trials (some combination of 5 trials <50uV, and 5 trials >=50uV).
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
+'' USER DEFINED VARIABLES - default values here are provided based on using a magstim Bistim, assuming average RMT = 47% MSO (see data from https://www.brainstimjrnl.com/article/S1935-861X(19)30480-2/fulltext#app-1).
+' Number of muscles and ranges for initial search space
+var muscles      := 1;                     'how many data channels/muscles are we going to work with? Between 1 and 4 are possible.
+var relTestRange := 10;                    'range to search (e.g hotspot intensity +/- 10) if a relative search space is chosen in the dialogue box
+var minTestRange := 20;                    'minimum of search range if an absolute search space is chosen in the dialogue box
+var maxTestRange := 90;                    'maximum
+
+'Magstim parameters: type of device and corresponding sampling configurations
+var magstimType := 1;               'set to 0 for a magstim 200, or 1 for a bistim - note this autoatically sets up the configuration files below
+
+'Trial-level parameters: amplitude to consider valid or invalid, values of noise, windows to calculate baseline noise and MEPs
+var requiredAmplitude     := 50;                'peak to peak amplitude in uV that should be met or exceeded to be considered above threshold
+var noiseValueLimit       := 10;                'RMS baseline EMG value that should not be exceeded; trial is rejected if above this value
+var offsetCorrection      := 1;                 'correct the offset before calculating the noise? 0 = no, 1 = yes; correcting the offset dramatically reduces noise, so it's recommended
+var pulseTime             := 0.5;               'by the sampling configuration, the sweep is of length 1 second and the pulse occurs half-way through it (at 0.5 seconds)
+var baselineStartTime     := 0.398;             'start time for getting baseline RMS activity
+var baselineEndTime       := 0.498;             'end time for getting baseline RMS activity
+var MEPstartTime          := 0.510;             'start time at which to begin measuring channel MEP amplitude
+var MEPendTime            := 0.550;             'end time to stop measuring channel MEP response
+var interTrialTime        := 4.5;               'in seconds, time between trials
+var interTrialVariation   := 0;                 'in percentage, variation of the time between trials (e.g. 20% of 5 seconds = 1 second)
+
+'Other parameters
+var currentPath$ := FilePath$();   'this sets the path to where the script is
+var savePath$ := currentPath$;     'where the log file will be saved to - note this is by default, the folder where this script is
+var waitTime := 15;                'seconds to allow the experimenter to place the coil in the correct position before the scri
+var debugMode := 0;                'if 1, changes some settings for faster bug checking. If 0 runs normally. Should be 0 for any real testing you do
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
+'' GLOBAL VARIABLES - these are used at several different times during the script, or represent default values
+'The user DOES NOT NEED to make edits to these variables
+var data%;                                           'view handle for the data file we will create
+var dataChan%[4];                                    'array to hold list of channels we record data from (could increase in theory)
+dataChan%[0] := 1;                                   '1st muscle recorded from is on data channel 1
+dataChan%[1] := 2;                                   '2nd muscle recorded from is on data channel 2
+dataChan%[2] := 3;                                   '3rd muscle recorded from is on data channel 3
+dataChan%[3] := 4;                                   '4th muscle recorded from is on data channel 4
+var timestampStart, timestampEnd;
+var muscleIterator := 0;                             'used to loop through the dataChan array to extract data
+var testValue%[4];                                   'holds MEP amplitudes recorded from each data channel the trial
+var noiseValue%[4];                                  'holds RMS noise values recorded from each channel for the trial
+var noiseFlag := 0;                                  'becomes 1 if the background noise value on the trial was too high
+var noisyTrials := 0;                                'keep count of trials with noise
+var currentIntensity, minimum, maximum;              'variables to set up the binary search algorithm
+var trialNumber := 0;                                'overall trial number (note; this isn't the 'frame' trial number, which we calculate for each intensity
+var intensitiesSearched := 1;                        'how many different intensities have we tried?
+var trialsAboveRequiredAmplitude := 0;               'how many trials at this intensity were above threshold?
+var trialsBelowRequiredAmplitude := 0;               'how many trials at this intensity were below threshold?
+var finishedFlag := 0;                               'used to double check all intensities have been tested
+var list[10];                                        'array to hold the possible values for RMT (intensities where >=5/10 50uV MEPs found)
+var i;
+var pauseButtonPressed := 0;                         'boolean for current state of the manual pause button (0 = not pressed, 1 = pressed)
+for i := 0 to 9 step 1 do                            'empty array defaults to store 0's - setting this to very high numbers lets us later check for lowest (real) value
+    list[i] := 999;
+next;
+
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''' START OF THE SCRIPT ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+'' INITIALIZATION - used to set up the appearance of the on screen layout & start running the toolbar function
+var ok%, nameOfLogFile$, MSO%;
+DlgCreate("Enter name of output files");  'start new dialog
+DlgString(1, "Enter Particiant ID", 20); 'string, any characters
+ok% := DlgShow(nameOfLogFile$);    'show dialog
+nameOfLogFile$ := savePath$ + nameOfLogFile$ + ".txt";
+
+DlgCreate ("Hotspot Intensity"); 'start new dialog
+DlgInteger(1,"%MSO value of Hotspot (0 = absolute search space)",0, 100, 0, 0, 1);   'range 0-10,spinner
+ok% := DlgShow(MSO%); 'show dialog
+'PrintLog(MSO%);
+
+if MSO% = 0 then  'default ABSOLUTE & wide search...
+    minimum := minTestRange;
+    maximum := maxTestRange;
+    currentIntensity := round((maximum + minimum)/2);  'set the current state to begin at the starting intensity
+else        'target search around hotspot intensity
+    currentIntensity := MSO%;
+    minimum := MSO% - relTestRange;
+    maximum := MSO% + relTestRange;
+endif
+
+var startingMinimum := minimum;
+
+EditSelectAll();     'selects any text currently in the log file
+EditClear();         'clears text from the log file
+
+'set up width of window for EMG data and log window based on number of muscles
+var data_width := 100 - (20 + (muscles * 6)); 'this sets the width of the data, which is reduced as more muscles are tested
+var log_width := 100 - data_width;  'conversely, the width of the log file increases to output values for all muscles
+
+
+'write header line for log text...
+var logString$ := "%MSO\tTrial\t";   
+for muscleIterator := 0 to muscles-1 do
+    logString$ := logString$ + "MEP_" + Str$(muscleIterator+1) + "\t";
+next;
+for muscleIterator := 0 to muscles-1 do
+    logString$ := logString$ + "RMS_" + Str$(muscleIterator+1) + "\t";
+next;
+logString$ := logString$ + "\r";
+PrintLog(logString$);
+
+data%:=FileNew(0,2);           'open a new data file for sampling
+WindowVisible(1);              'show the new data file
+If data%<0 then                'if you can't start a new file, show an error message
+    Message("Unable to open new data file"); 
+    Halt; 
+endif;   
+Window(0,0,data_width,100);   'here we apply the window settings
+
+'set up window settings for log text
+FrontView(logHandle());    'select the log text window
+Window(data_width, 0, 100, 98); 'here we apply the window settings
+FrontView(data%);      'select the log text window, prevents error for recording from the data window
+
+'set up the state parameters (%MSO, inter-trial interval, etc)    
+var nStates% := 100;
+SampleStates(nStates%);
+SampleAuxStateParam(1,magstimType);                   'tells the system there is a magstim device attached, and the type of device
+for i := 1 to nStates% do    
+    SampleAuxStateValue(i,1,i);                       'for each state, set stimulator A to give the corresponding stimulation intensity (e.g. state 3 = 3% MSO)
+    SampleAuxStateValue(i,2,0);                       'for each state, set stimulator B to 0% MSO.
+    SampleFixedInt(i, interTrialTime);                'for each state set the intertrial interval in seconds
+    SampleFixedVar(i, interTrialVariation);           'for each state set the intertrial variation in percentage
+    SampleStateLabel$(i,Print$(i));
+    
+next;
+'SampleState(currentIntensity); 
+MakeRMTToolbar();      'creates the toolbar that the user will interact with to make the script work
+Halt;
+
+'' SETUP TOOLBAR - modify things here to add buttons and different options in the future (e.g. maybe we can set the starting intensity and minimum/maximum search values here?)
+Func MakeRMTToolbar()
+
+    ToolbarClear();                                                                         'clear out any existing toolbars
+    ToolbarSet(0,"",doIdle%);                                                               'tells the system what to do when 'idle' between data points being sampled
+    ToolbarSet(1, "QUIT RMT-Finder");                                                       'exit button
+    ToolbarSet(2, "START RMT-Finder", doStart%);                                            'start button
+    return Toolbar("Resting Motor Threshold Finder (RMT-Finder)", 36);                      'name displayed on the toolbar (36 = user may use the view menu + may move and resize the window)
+end;
+
+
+
+'' START BUTTON PRESSED; start collecting data... - maybe have this auto run..?
+Func doStart%()
+    Yield(waitTime);                      'wait a few seconds for experimenter to place coil on hotspot
+    timestampStart := seconds();          'start timer to measure duration of data collection
+    SampleState(currentIntensity);        'set the sample state (i.e. TMS intensity and device) based on the user defined variables
+    SampleStart();                        'startSampling
+    SampleStatesRun(0);                   'enables manual/direct script control of states
+'SampleWrite(0);                          'don't save the file once we finish collecting this frame...
+    SamplePause(1);                       'pause sampling - after each frame of data is collected this will trigger the 'idle' function
+    return 1;                             'This leaves toolbar active
+end;
+
+
+'' IDLE FUNCTION: used to detect when the stimulator has just finished collecting a frame, also where we determine if we should change intensity
+Func doIdle%()
+
+    var s%;
+    s% := SampleStatus();
+    if (s% = 3) then                                                                        'If paused between sweeps...
+    
+        if trialNumber = 0 then                                                             'this is the very first trial, which currently is a 'dummy' trial that's not of use for our analysis
+            SampleState(currentIntensity);                                                  'set the stimulator to the correct intensity it should use for the first real trial
+            trialNumber := trialNumber + 1;                                                 'increment the trial number so we know to continue
+            SampleSweep();                                                                  'trigger next frame (after delay based on configuration file)
+        else
+            trialNumber := trialNumber + 1;                                                 'we just recorded a frame/trial, so increment the (total) trial number.
+        
+        'get data from data channels for each muscle being recorded from:  'MARCOS: below you multiply the signal by *1000 to put it in microV, this assumes Signal is configured in mV... should we say it at the beginning?
+        for muscleIterator := 0 to muscles-1 do                                                                                         'loop through muscles being recorded from
+            testValue%[muscleIterator] := Round(ChanMeasure(dataChan%[muscleIterator] , 9, MEPstartTime, MEPendTime) * 1000);              'read MEP peak to peak amplitude
+            noiseValue%[muscleIterator]:= Round(ChanMeasure(dataChan%[muscleIterator],10,baselineStartTime,baselineEndTime) * 1000);   'read RMS noise from muscle in baseline time period
+            ' correct offset before calculating noise
+            if offsetCorrection = 1 then         
+                var baselineMean := ChanMeasure(dataChan%[muscleIterator], 2, baselineStartTime, baselineEndTime);
+                ChanOffset(dataChan%[muscleIterator], -baselineMean);
+                noiseValue%[muscleIterator] := Round(ChanMeasure(dataChan%[muscleIterator], 10, baselineStartTime, baselineEndTime) * 1000);
+            endif
+        next;
+        
+        'check background noise is below threshold for each channel
+        noiseFlag := 0;
+        for muscleIterator := 0 to muscles-1 do
+            if noiseValue%[muscleIterator] > noiseValueLimit then
+                noiseFlag := 1;
+                noisyTrials := noisyTrials + 1;
+            endif
+        next;
+        
+       'check if all muscles being recorded from are above required amplitude value & modify counts accordingly (if noise threshold exceeded then don't increment these counts).                           
+        var musclesPassed := 0;
+        if noiseFlag = 0 then
+            for muscleIterator := 0 to muscles-1 do
+                if testValue%[muscleIterator] >= requiredAmplitude then
+                    musclesPassed := musclesPassed + 1;
+                endif
+            next;
+            if musclesPassed = muscles then                                                 'each muscle checked was >= required threshold, so the trial is 'valid'
+                trialsAboveRequiredAmplitude := trialsAboveRequiredAmplitude + 1;
+            else
+                trialsBelowRequiredAmplitude := trialsBelowRequiredAmplitude + 1;
+            endif
+        else
+            printLog("Noise too high; the trial below is NOT counted\n");
+        endif
+        
+        'build string to write readouts to log text: 
+        
+        logString$ := Str$(currentIntensity);                                               'start with current intensity being checked      
+        logString$ := logString$ + "\t" + Str$(trialsAboveRequiredAmplitude + trialsBelowRequiredAmplitude) + "\t"; 'add trial number (based on trials with acceptable noise levels only)
+        
+        for muscleIterator := 0 to muscles-1 do   
+            logString$ := logString$ + Str$(testValue%[muscleIterator]) + "\t";             'add readouts of MEP amplitudes from each channel in adjacent columnns
+        next;
+  
+        for muscleIterator := 0 to muscles-1 do                                               
+            logString$ := logString$ + Str$(noiseValue%[muscleIterator]) + "\t";            'add noise value readouts in adjacent columns:
+        next;
+        logString$ := logString$ + "\r";                                                    'move to new line
+        
+        PrintLog(logString$);                                                               'output text to log file    
+        
+        if trialsAboveRequiredAmplitude = 5 or trialsBelowRequiredAmplitude = 6 then
+    
+            if trialsAboveRequiredAmplitude = 5 then                                        '5 MEPs above 50uV, so possible RMT found
+                list[intensitiesSearched] := currentIntensity;                              'Add this to list of possible RMT values
+                maximum := currentIntensity - 1;                                            'only test intensities lower than this from now on
+                if maximum < minimum then
+                    maximum := minimum;                                                      'only occurs if the last intensity checked was the minimum; should end testing when checking for finishedFlag variable
+                endif
+            endif
+        
+            if trialsBelowRequiredAmplitude = 6 then                                        '6 MEPs below 50uV, this can't be the RMT - shift TMS intensity UP
+                minimum := currentIntensity + 1;                                            'only intensities higher than this should be tested from now on
+                if minimum > maximum then
+                    minimum := maximum;
+                endif
+                
+            endif
+            
+            if currentIntensity = maximum and maximum = minimum then
+                finishedFlag := 1;
+            endif
+            
+            currentIntensity := round((maximum + minimum)/2);                               'apply algorithm to determine next intensity to work at
+            SampleState(currentIntensity);                                                  'set stimulator to try next intensity
+            intensitiesSearched := intensitiesSearched + 1;                                 'we are going to search a new intensity, so increment this number
+            trialsAboveRequiredAmplitude := 0;                                              'resetting values
+            trialsBelowRequiredAmplitude := 0;                                              'resetting values
+            PrintLog("\n");                                                                 'add a new line to separate out trials with different intensities
+            'PrintLog("Minimum = ", minimum, " Maximum = ", maximum);                        'check values...
+        endif
+
+            'check for intensities left to examine
+            'if maximum - minimum > 0 or currentIntensity = list[Min(list)]-1 then           'we haven't yet exhausted all possible options, so keep testing...        BUT This is where we check if max > min, so we need to trigger the 'getout' here
+            if finishedFlag = 0 then
+                SampleSweep();      'tell signal it can proceed to the next sweep (it'll wait until the time defined in the config file before starting)
+            else                                                                            'all possible intensities searched; provide final output for user.
+                TimestampEnd := seconds();                                                  'end timer for data collection
+                trialNumber := trialNumber - 1;
+                intensitiesSearched := intensitiesSearched - 1;
+                printLog("Search complete!\n");
+                printLog("RMT = ", list[Min(list)]); 
+                PrintLog("Intensities examined = ", intensitiesSearched);
+                PrintLog("Total trials = ", trialNumber);
+                PrintLog("Noisy trials = ", noisyTrials);        
+                PrintLog("Time taken (seconds)= ", round(TimestampEnd - TimestampStart));   'calculate & output duration from first to last trial in seconds  
+                FrontView(logHandle());                                                     'select the log text window       
+                Speak("Data collection complete");   
+                
+                if list[Min(list)] = 999 then
+                    Speak("Warning, range too low");  'MARCOS: modified this message and the equivalent below to be shorter
+                PrintLog("WARNING! RMT was not detected. Increase the starting intensity and/or increase range and try again.");     
+                endif
+            
+                if list[Min(list)] = startingMinimum then
+                    Speak("Warning, range too high");  
+                    PrintLog("WARNING! RMT was not detected. Decrease the starting intensity and/or increase the range and try again.");
+                endif                 
+                             
+                FileSaveAs(nameOfLogFile$); 
+                Halt;
+            
+            endif 'of check for intensities left to examine
+        endif 'check of trial number
+    endif   'of paused between sweeps  'might be an error here..?
+    return 1  'This leaves toolbar active
+
+end
